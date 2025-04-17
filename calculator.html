@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            background: linear-gradient(135deg, #a1c4fd, #c2e9fb);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Inter', sans-serif;
+        }
+        .calculator {
+            background: #1f2937;
+            border-radius: 1rem;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+            padding: 1.5rem;
+            width: 100%;
+            max-width: 360px;
+            border: 1px solid #4b5563;
+        }
+        .display {
+            background: #f3f4f6;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            text-align: right;
+            font-size: 1.5rem;
+            color: #111827;
+            min-height: 60px;
+            word-break: break-all;
+            margin-bottom: 1rem;
+        }
+        .btn {
+            transition: background-color 0.2s ease, transform 0.1s ease;
+        }
+        .btn:hover {
+            filter: brightness(1.1);
+        }
+        .btn:active {
+            transform: scale(0.95);
+        }
+        .operator-btn.active {
+            background-color: #2563eb;
+        }
+        /* Media Queries for Responsiveness */
+        @media (max-width: 480px) {
+            .calculator {
+                margin: 0.5rem;
+                padding: 0.75rem;
+                max-width: 280px;
+            }
+            .display {
+                font-size: 1.125rem;
+                padding: 0.5rem;
+                min-height: 50px;
+            }
+            .btn {
+                padding: 0.5rem;
+                font-size: 0.875rem;
+            }
+            .grid {
+                gap: 0.25rem;
+            }
+        }
+        @media (min-width: 481px) and (max-width: 768px) {
+            .calculator {
+                max-width: 320px;
+                padding: 1rem;
+            }
+            .display {
+                font-size: 1.25rem;
+                padding: 0.75rem;
+            }
+            .btn {
+                padding: 0.75rem;
+                font-size: 1rem;
+            }
+            .grid {
+                gap: 0.375rem;
+            }
+        }
+        @media (min-width: 769px) {
+            .calculator {
+                max-width: 360px;
+                padding: 1.5rem;
+            }
+            .display {
+                font-size: 1.5rem;
+                padding: 1rem;
+            }
+            .btn {
+                padding: 1rem;
+                font-size: 1.125rem;
+            }
+            .grid {
+                gap: 0.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="calculator">
+        <div class="display" id="display">0</div>
+        <div class="grid grid-cols-4 gap-2">
+            <button onclick="clearDisplay()" class="btn bg-red-500 text-white p-3 rounded-lg col-span-2">C</button>
+            <button onclick="setOperator('/')" class="btn operator-btn bg-blue-500 text-white p-3 rounded-lg">÷</button>
+            <button onclick="setOperator('*')" class="btn operator-btn bg-blue-500 text-white p-3 rounded-lg">×</button>
+            <button onclick="appendNumber('7')" class="btn bg-gray-700 text-white p-3 rounded-lg">7</button>
+            <button onclick="appendNumber('8')" class="btn bg-gray-700 text-white p-3 rounded-lg">8</button>
+            <button onclick="appendNumber('9')" class="btn bg-gray-700 text-white p-3 rounded-lg">9</button>
+            <button onclick="setOperator('-')" class="btn operator-btn bg-blue-500 text-white p-3 rounded-lg">-</button>
+            <button onclick="appendNumber('4')" class="btn bg-gray-700 text-white p-3 rounded-lg">4</button>
+            <button onclick="appendNumber('5')" class="btn bg-gray-700 text-white p-3 rounded-lg">5</button>
+            <button onclick="appendNumber('6')" class="btn bg-gray-700 text-white p-3 rounded-lg">6</button>
+            <button onclick="setOperator('+')" class="btn operator-btn bg-blue-500 text-white p-3 rounded-lg">+</button>
+            <button onclick="appendNumber('1')" class="btn bg-gray-700 text-white p-3 rounded-lg">1</button>
+            <button onclick="appendNumber('2')" class="btn bg-gray-700 text-white p-3 rounded-lg">2</button>
+            <button onclick="appendNumber('3')" class="btn bg-gray-700 text-white p-3 rounded-lg">3</button>
+            <button onclick="calculate()" class="btn bg-green-500 text-white p-3 rounded-lg row-span-2">=</button>
+            <button onclick="appendNumber('0')" class="btn bg-gray-700 text-white p-3 rounded-lg col-span-2">0</button>
+            <button onclick="appendNumber('.')" class="btn bg-gray-700 text-white p-3 rounded-lg">.</button>
+        </div>
+    </div>
+    <script>
+        let displayValue = '0';
+        let firstNumber = null;
+        let currentOperator = null;
+        let waitingForSecondNumber = false;
+        let expression = '';
+
+        function updateDisplay() {
+            document.getElementById('display').textContent = expression || displayValue;
+        }
+
+        function appendNumber(number) {
+            if (displayValue === 'Error') {
+                clearDisplay();
+            }
+            if (waitingForSecondNumber) {
+                displayValue = number;
+                waitingForSecondNumber = false;
+            } else {
+                displayValue = displayValue === '0' && number !== '.' ? number : displayValue + number;
+            }
+            expression = firstNumber !== null ? `${firstNumber} ${currentOperator} ${displayValue}` : displayValue;
+            updateDisplay();
+        }
+
+        function setOperator(op) {
+            if (displayValue === 'Error') return;
+            if (firstNumber !== null && !waitingForSecondNumber) {
+                calculate();
+            }
+            firstNumber = parseFloat(displayValue);
+            currentOperator = op;
+            waitingForSecondNumber = true;
+            expression = `${firstNumber} ${op}`;
+            updateDisplay();
+
+            document.querySelectorAll('.operator-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.textContent === op || (op === '*' && btn.textContent === '×') || (op === '/' && btn.textContent === '÷')) {
+                    btn.classList.add('active');
+                }
+            });
+        }
+
+        function calculate() {
+            if (firstNumber === null || currentOperator === null || waitingForSecondNumber) return;
+
+            const secondNumber = parseFloat(displayValue);
+            let result;
+
+            if (isNaN(secondNumber)) {
+                displayValue = 'Error';
+                expression = 'Error';
+                updateDisplay();
+                return;
+            }
+
+            switch (currentOperator) {
+                case '+':
+                    result = firstNumber + secondNumber;
+                    break;
+                case '-':
+                    result = firstNumber - secondNumber;
+                    break;
+                case '*':
+                    result = firstNumber * secondNumber;
+                    break;
+                case '/':
+                    result = secondNumber !== 0 ? firstNumber / secondNumber : 'Error';
+                    break;
+                default:
+                    result = 'Error';
+            }
+
+            if (result === 'Error') {
+                displayValue = 'Error';
+                expression = 'Error';
+            } else {
+                displayValue = Number.isInteger(result) ? result.toString() : result.toFixed(4).replace(/\.?0+$/, '');
+                expression = displayValue;
+            }
+
+            firstNumber = null;
+            currentOperator = null;
+            waitingForSecondNumber = false;
+            document.querySelectorAll('.operator-btn').forEach(btn => btn.classList.remove('active'));
+            updateDisplay();
+        }
+
+        function clearDisplay() {
+            displayValue = '0';
+            firstNumber = null;
+            currentOperator = null;
+            waitingForSecondNumber = false;
+            expression = '';
+            document.querySelectorAll('.operator-btn').forEach(btn => btn.classList.remove('active'));
+            updateDisplay();
+        }
+
+        updateDisplay();
+    </script>
+</body>
+</html>
