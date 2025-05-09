@@ -28,9 +28,6 @@ This is a simple and responsive calculator web application built using HTML, CSS
 - **CSS**: For styling and responsiveness.
 - **JavaScript**: For the calculator's functionality.
 
-## Screenshots
-
-![Calculator Screenshot](Screenshot 2025-05-09 213717.png)
 
 ## License
 
